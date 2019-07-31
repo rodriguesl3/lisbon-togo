@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lisbon_togo/src/shared/model/route.dart';
@@ -26,22 +27,45 @@ class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
 
   Set<Polyline> _polyline = {};
+  Set<Polyline> _newPolyline = {};
   List<LatLng> latlng = List();
+  GoogleMap googleMaps;
+  Set<Marker> _markers = {};
+  PolylineUpdates polylineUpdate;
 
-  void updatePolylineRoute(List<LatLng> routeStep, Color color) {
-    _polyline.add(Polyline(
-      polylineId: PolylineId(startPosition.toString()),
-      visible: true,
-      points: routeStep,
-      color: color,
-      geodesic: true,
+  void updatePolylineRoute(List<LatLng> routeStep, Color color) async {
+    _polyline.clear();
+
+    _markers.add(Marker(
+      markerId: MarkerId(routeStep[0].toString()),
+      position: routeStep[0],
+      infoWindow: InfoWindow(title: 'Change Vehicle'),
     ));
+
+    final GoogleMapController controller = await _controller.future;
+
+    polylineUpdate = PolylineUpdates.from(googleMaps.polylines, null);
+    controller.updatePolylines(polylineUpdate);
+
+    _polyline.add(Polyline(
+        polylineId:
+            PolylineId(DateTime.now().millisecondsSinceEpoch.toString()),
+        visible: true,
+        points: routeStep,
+        color: color,
+        geodesic: true,
+        onTap: () {
+          print('pressed me');
+        }));
+
+    polylineUpdate = PolylineUpdates.from(null, _polyline);
+    var markerUpdate = MarkerUpdates.from(null, _markers);
+    controller.updatePolylines(polylineUpdate);
+    controller.updateMarkers(markerUpdate);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Set<Marker> _markers = {};
-
     _markers.add(Marker(
       markerId: MarkerId(startPosition.toString()),
       position: startPosition,
@@ -54,28 +78,28 @@ class MapSampleState extends State<MapSample> {
       infoWindow: InfoWindow(title: 'Your destination'),
     ));
 
-    //add your lat and lng where you wants to draw polyline
-
     latlng.add(startPosition);
     latlng.add(endPosition);
+
+    googleMaps = GoogleMap(
+      polylines: _polyline,
+      markers: _markers,
+      mapType: MapType.hybrid,
+      initialCameraPosition: CameraPosition(
+        target: this.startPosition,
+        zoom: 14.4746,
+      ),
+      onMapCreated: (GoogleMapController controller) {
+        _controller.complete(controller);
+      },
+      indoorViewEnabled: true,
+    );
 
     return new Scaffold(
       body: Stack(
         overflow: Overflow.visible,
         children: <Widget>[
-          GoogleMap(
-            polylines: _polyline,
-            markers: _markers,
-            mapType: MapType.hybrid,
-            initialCameraPosition: CameraPosition(
-              target: this.startPosition, //LatLng(33.738045, 73.084488),
-              zoom: 14.4746,
-            ),
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-            
-          ),
+          googleMaps,
           Positioned(
             height: 150.0,
             width: MediaQuery.of(context).size.width,
@@ -137,17 +161,38 @@ class MapSampleState extends State<MapSample> {
                                 var routeCoordinates = routeList[index]
                                     .travelInformation
                                     .routeSteps
-                                    .map((step) => step.coordinates.map(
-                                        (coordinate) => LatLng(
-                                            double.parse(coordinate.latitude),
-                                            double.parse(
-                                                coordinate.longitude))));
+                                    .map((step) {
+                                  var routes = step.coordinates.map(
+                                      (coordinate) => LatLng(
+                                          double.parse(coordinate.latitude),
+                                          double.parse(coordinate.longitude)));
 
-                                var foo =
+                                  //return routes;
+                                  var colors = [
+                                    Colors.blue,
+                                    Colors.yellow,
+                                    Colors.green,
+                                    Colors.indigo,
+                                    Colors.lime,
+                                    Colors.orange,
+                                    Colors.red
+                                  ];
+
+                                  Random rnd;
+                                  int min = 0;
+                                  int max = colors.length;
+                                  rnd = new Random();
+                                  var r = min + rnd.nextInt(max - min);
+
+                                  var color = colors[r];
+
+                                  updatePolylineRoute(routes.toList(), color);
+
+                                  return routes;
+                                });
+
+                                var routoeCoordinateList =
                                     routeCoordinates.expand((x) => x).toList();
-                                updatePolylineRoute(foo, Colors.yellow);
-
-                                
                               },
                               child: Row(
                                 children: <Widget>[
