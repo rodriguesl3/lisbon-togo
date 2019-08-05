@@ -32,37 +32,7 @@ class MapSampleState extends State<MapSample> {
   GoogleMap googleMaps;
   Set<Marker> _markers = {};
   PolylineUpdates polylineUpdate;
-
-  void updatePolylineRoute(List<LatLng> routeStep, Color color) async {
-    _polyline.clear();
-
-    _markers.add(Marker(
-      markerId: MarkerId(routeStep[0].toString()),
-      position: routeStep[0],
-      infoWindow: InfoWindow(title: 'Change Vehicle'),
-    ));
-
-    final GoogleMapController controller = await _controller.future;
-
-    polylineUpdate = PolylineUpdates.from(googleMaps.polylines, null);
-    controller.updatePolylines(polylineUpdate);
-
-    _polyline.add(Polyline(
-        polylineId:
-            PolylineId(DateTime.now().millisecondsSinceEpoch.toString()),
-        visible: true,
-        points: routeStep,
-        color: color,
-        geodesic: true,
-        onTap: () {
-          print('pressed me');
-        }));
-
-    polylineUpdate = PolylineUpdates.from(null, _polyline);
-    var markerUpdate = MarkerUpdates.from(null, _markers);
-    controller.updatePolylines(polylineUpdate);
-    controller.updateMarkers(markerUpdate);
-  }
+  GoogleMapController mapController;
 
   @override
   Widget build(BuildContext context) {
@@ -81,19 +51,7 @@ class MapSampleState extends State<MapSample> {
     latlng.add(startPosition);
     latlng.add(endPosition);
 
-    googleMaps = GoogleMap(
-      polylines: _polyline,
-      markers: _markers,
-      mapType: MapType.hybrid,
-      initialCameraPosition: CameraPosition(
-        target: this.startPosition,
-        zoom: 14.4746,
-      ),
-      onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
-      },
-      indoorViewEnabled: true,
-    );
+    rebuildMap();
 
     return new Scaffold(
       body: Stack(
@@ -156,50 +114,43 @@ class MapSampleState extends State<MapSample> {
                                 ),
                               ],
                             ),
-                            FlatButton(
-                              onPressed: () {
-                                var routeCoordinates = routeList[index]
-                                    .travelInformation
-                                    .routeSteps
-                                    .map((step) {
-                                  var routes = step.coordinates.map(
-                                      (coordinate) => LatLng(
-                                          double.parse(coordinate.latitude),
-                                          double.parse(coordinate.longitude)));
+                            Row(
+                              children: <Widget>[
+                                FlatButton(
+                                  onPressed: () {
+                                    var routeCoordinates = routeList[index]
+                                        .travelInformation
+                                        .routeSteps
+                                        .forEach((step) {
+                                      //return routes;
+                                      var colors = [
+                                        Colors.blue,
+                                        Colors.yellow,
+                                        Colors.green,
+                                        Colors.indigo,
+                                        Colors.lime,
+                                        Colors.orange,
+                                        Colors.red
+                                      ];
 
-                                  //return routes;
-                                  var colors = [
-                                    Colors.blue,
-                                    Colors.yellow,
-                                    Colors.green,
-                                    Colors.indigo,
-                                    Colors.lime,
-                                    Colors.orange,
-                                    Colors.red
-                                  ];
+                                      Random rnd;
+                                      int min = 0;
+                                      int max = colors.length;
+                                      rnd = new Random();
+                                      var r = min + rnd.nextInt(max - min);
 
-                                  Random rnd;
-                                  int min = 0;
-                                  int max = colors.length;
-                                  rnd = new Random();
-                                  var r = min + rnd.nextInt(max - min);
-
-                                  var color = colors[r];
-
-                                  updatePolylineRoute(routes.toList(), color);
-
-                                  return routes;
-                                });
-
-                                var routoeCoordinateList =
-                                    routeCoordinates.expand((x) => x).toList();
-                              },
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(Icons.directions),
-                                  Text('Mostrar Rota')
-                                ],
-                              ),
+                                      var color = colors[r];
+                                      updatePolylineRoute(step, color);
+                                    });
+                                  },
+                                  child: Row(
+                                    children: <Widget>[
+                                      Icon(Icons.directions),
+                                      Text('Exibir rota')
+                                    ],
+                                  ),
+                                )
+                              ],
                             )
                           ],
                         ),
@@ -208,14 +159,61 @@ class MapSampleState extends State<MapSample> {
           )
         ],
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: () {
-      //     goToDestination(this.endPosition);
-      //   },
-      //   label: Text('Vamos lá!'),
-      //   icon: Icon(Icons.directions),
-      // ),
     );
+  }
+
+  void rebuildMap() {
+    googleMaps = GoogleMap(
+      polylines: _polyline,
+      markers: _markers,
+      mapType: MapType.hybrid,
+      initialCameraPosition: CameraPosition(
+        target: this.startPosition,
+        zoom: 14.4746,
+      ),
+      onMapCreated: (GoogleMapController controller) {
+        _controller.complete(controller);
+        mapController = controller;
+      },
+      indoorViewEnabled: true,
+    );
+  }
+
+  void updatePolylineRoute(RouteStep step, Color color) async {
+    var routeStep = step.coordinates
+        .map((coordinate) => LatLng(double.parse(coordinate.latitude),
+            double.parse(coordinate.longitude)))
+        .toList();
+
+    _markers.add(Marker(
+        markerId: MarkerId(routeStep[0].toString()),
+        position: routeStep[0],
+        infoWindow: InfoWindow(
+            title: step.transportCarrier,
+            snippet: step.instruction,
+            onTap: () {
+              print('dsajfkhlaksdfhajksf');
+            }),
+        onTap: () {
+          print('text');
+        }));
+
+    _polyline.add(Polyline(
+        polylineId:
+            PolylineId(DateTime.now().millisecondsSinceEpoch.toString()),
+        visible: true,
+        points: routeStep,
+        color: color,
+        geodesic: true,
+        onTap: () {
+          print('pressed me');
+        }));
+
+    polylineUpdate = PolylineUpdates.from(null, _polyline);
+    mapController.updatePolylines(polylineUpdate);
+
+    var markerUpdate = MarkerUpdates.from(null, _markers);
+    mapController.updateMarkers(markerUpdate);
   }
 
   Future<void> goToDestination(LatLng endPosition) async {

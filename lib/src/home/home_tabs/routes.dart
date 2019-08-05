@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 // import 'package:lisbon_togo/src/shared/components/flutter_map_route.dart';
 import 'package:lisbon_togo/src/shared/components/google_maps_route.dart';
+import 'package:lisbon_togo/src/shared/components/loading.dart';
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/route.dart';
 import 'package:location/location.dart';
@@ -72,18 +73,9 @@ class _RoutesState extends State<Routes> {
             stream: bloc.currentPosition,
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return Center(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Procurando sua localização.',
-                      style: TextStyle(fontSize: 30.0, color: Colors.black),
-                    ),
-                    CircularProgressIndicator(),
-                  ],
-                ));
+                return Loading('Procurando sua localização.');
+              } else if (snapshot.hasError) {
+                return Loading('Problema para encontrar sua localização.');
               }
               var position = snapshot.data;
               var endPosition = LatLng(initialLatitude, initialLongitude);

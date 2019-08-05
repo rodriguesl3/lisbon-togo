@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lisbon_togo/src/home/home_page.dart';
+import 'package:lisbon_togo/src/home/home_tabs/blocs/station_bloc.dart';
 import 'package:lisbon_togo/src/home/home_tabs/blocs/suggestion_bloc.dart';
 import 'package:lisbon_togo/src/repositories/request_client_http.dart';
 import 'package:lisbon_togo/src/repositories/route_repository.dart';
+import 'package:lisbon_togo/src/repositories/stations_repository.dart';
 import 'package:lisbon_togo/src/repositories/suggestions_repository.dart';
 import 'package:bloc_pattern/bloc_pattern.dart';
 
@@ -15,11 +17,15 @@ void main() => runApp(BlocProvider(
         Dependency((i) => RequestClient()),
         Dependency(
             (i) => SuggestionsRepository(i.get<RequestClient>().requestHttp())),
-        Dependency((i) => RouteRepository(i.get<RequestClient>().requestHttp()))
+        Dependency(
+            (i) => RouteRepository(i.get<RequestClient>().requestHttp())),
+        Dependency(
+            (i) => StationsRepository(i.get<RequestClient>().requestHttp()))
       ],
       blocs: [
         Bloc((i) => SuggestionBLoc(i.get<SuggestionsRepository>())),
-        Bloc((i) => RoutesBloc(i.get<RouteRepository>()))
+        Bloc((i) => RoutesBloc(i.get<RouteRepository>())),
+        Bloc((i) => StationsBloc(i.get<StationsRepository>()))
       ],
     ));
 

@@ -1,4 +1,11 @@
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lisbon_togo/src/shared/components/loading.dart';
+import 'package:lisbon_togo/src/shared/model/position_location.dart';
+import 'package:lisbon_togo/src/shared/model/stations.dart';
+
+import 'blocs/station_bloc.dart';
 // import 'package:flutter_map/flutter_map.dart';
 // import 'package:latlong/latlong.dart';
 
@@ -9,10 +16,10 @@ class Stations extends StatefulWidget {
 }
 
 class _StationsState extends State<Stations> {
-  
-
   @override
   Widget build(BuildContext context) {
+    var bloc = BlocProvider.getBloc<StationsBloc>();
+
     var scaffold = Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -21,17 +28,6 @@ class _StationsState extends State<Stations> {
             Navigator.pop(context);
           },
         ),
-        /*TextField(
-                        style: new TextStyle(
-                          color: Colors.white,
-
-                        ),
-                        decoration: new InputDecoration(
-                          prefixIcon: new Icon(Icons.search,color: Colors.white),
-                          hintText: "Search...",
-                          hintStyle: new TextStyle(color: Colors.white)
-                        ),
-                      ), */
         title: Text("Stations", textAlign: TextAlign.center),
         backgroundColor: Colors.white,
         flexibleSpace: Container(
@@ -45,8 +41,35 @@ class _StationsState extends State<Stations> {
           ),
         ),
       ),
-      
+      body: Container(
+        child: StreamBuilder<PositionLocationModel>(
+          stream: bloc.curretPosition,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return new Loading('Procurando sua localização.');
+            } else if (snapshot.hasError) {
+              return new Loading('Problema para encontrar localização');
+            }
+            var position = snapshot.data;
+            bloc.currentPosition.add(new LatLng(position.locationData.latitude,
+                position.locationData.longitude));
+            return StreamBuilder<List<LineModel>>(
+              stream: bloc.getStations,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return new Loading('Procurando proximidades.');
+                } else if (snapshot.hasError) {
+                  return new Loading('Problema para encontrar estações.');
+                }
+                Text('yes it works!!!');
+                print(snapshot.data);
+              },
+            );
+          },
+        ),
+      ),
     );
-    return scaffold;
+    return SafeArea(child: scaffold);
   }
 }
+
