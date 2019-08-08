@@ -53,7 +53,7 @@ class _StationsState extends State<Stations> {
             var position = snapshot.data;
             bloc.currentPosition.add(new LatLng(position.locationData.latitude,
                 position.locationData.longitude));
-            return StreamBuilder<List<LineModel>>(
+            return StreamBuilder<LineModel>(
               stream: bloc.getStations,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -61,8 +61,25 @@ class _StationsState extends State<Stations> {
                 } else if (snapshot.hasError) {
                   return new Loading('Problema para encontrar estações.');
                 }
-                Text('yes it works!!!');
-                print(snapshot.data);
+                var stations = snapshot.data.stopLocationList;
+                var nextBus = snapshot.data.nextBusList;
+
+                return ListView.builder(                  
+                  itemCount: stations.length,
+                  itemBuilder: (context, index) => ListTile(
+                    onTap: (){
+                      print(stations[index].stopCode);
+                    },
+                    title: Text("${stations[index].stopCode} - ${stations[index].address}"),
+                    leading: Image(image: NetworkImage("https://www.transporlis.pt/${nextBus[index].image}"),),
+                    subtitle: Text("${nextBus[index].time} \n ${nextBus[index].line}"),
+                    enabled: true,
+                    trailing: Icon(Icons.arrow_forward_ios),
+                    isThreeLine: true,
+                    dense: true,
+
+                  ),
+                );
               },
             );
           },
@@ -72,4 +89,3 @@ class _StationsState extends State<Stations> {
     return SafeArea(child: scaffold);
   }
 }
-

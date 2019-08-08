@@ -24,7 +24,7 @@ class StationsBloc extends BlocBase {
   Observable<PositionLocationModel> get curretPosition =>
       currentLocation.stream.asyncMap((v) => getCurrentPosition());
 
-  Observable<List<LineModel>> get getStations => stationsLocation.stream
+  Observable<LineModel> get getStations => stationsLocation.stream
       .asyncMap((station) => stationRepository.getStations(
           _positionController.value.latitude.toString(),
           _positionController.value.longitude.toString(),
