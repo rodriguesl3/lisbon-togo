@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -27,7 +28,6 @@ class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
 
   Set<Polyline> _polyline = {};
-  Set<Polyline> _newPolyline = {};
   List<LatLng> latlng = List();
   GoogleMap googleMaps;
   Set<Marker> _markers = {};
@@ -51,13 +51,23 @@ class MapSampleState extends State<MapSample> {
     latlng.add(startPosition);
     latlng.add(endPosition);
 
-    rebuildMap();
-
     return new Scaffold(
       body: Stack(
         overflow: Overflow.visible,
         children: <Widget>[
-          googleMaps,
+          GoogleMap(
+            polylines: _polyline,
+            markers: _markers,
+            mapType: MapType.hybrid,
+            initialCameraPosition: CameraPosition(
+              target: this.startPosition,
+              zoom: 14.4746,
+            ),
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+            indoorViewEnabled: true,
+          ),
           Positioned(
             height: 150.0,
             width: MediaQuery.of(context).size.width,
@@ -118,7 +128,11 @@ class MapSampleState extends State<MapSample> {
                               children: <Widget>[
                                 FlatButton(
                                   onPressed: () {
-                                    var routeCoordinates = routeList[index]
+                                    setState(() {
+                                      _markers.clear();
+                                      _polyline.clear();
+                                    });
+                                    routeList[index]
                                         .travelInformation
                                         .routeSteps
                                         .forEach((step) {
@@ -140,7 +154,37 @@ class MapSampleState extends State<MapSample> {
                                       var r = min + rnd.nextInt(max - min);
 
                                       var color = colors[r];
-                                      updatePolylineRoute(step, color);
+                                      var routeStep = step.coordinates
+                                          .map((coordinate) => LatLng(
+                                              double.parse(coordinate.latitude),
+                                              double.parse(
+                                                  coordinate.longitude)))
+                                          .toList();
+
+                                      setState(() {
+                                        _markers.add(Marker(
+                                            markerId: MarkerId(
+                                                routeStep[0].toString()),
+                                            position: routeStep[0],
+                                            infoWindow: InfoWindow(
+                                                title: step.transportCarrier,
+                                                snippet: step.instruction,
+                                                onTap: () {
+                                                  print('dsajfkhlaksdfhajksf');
+                                                }),
+                                            onTap: () {
+                                              print('text');
+                                            }));
+                                        _polyline.add(Polyline(
+                                            polylineId: PolylineId(Uuid().v1()),
+                                            visible: true,
+                                            points: routeStep,
+                                            color: color,
+                                            geodesic: true,
+                                            onTap: () {
+                                              print('pressed me');
+                                            }));
+                                      });
                                     });
                                   },
                                   child: Row(
@@ -149,7 +193,7 @@ class MapSampleState extends State<MapSample> {
                                       Text('Exibir rota')
                                     ],
                                   ),
-                                )
+                                ),
                               ],
                             )
                           ],
@@ -160,60 +204,6 @@ class MapSampleState extends State<MapSample> {
         ],
       ),
     );
-  }
-
-  void rebuildMap() {
-    googleMaps = GoogleMap(
-      polylines: _polyline,
-      markers: _markers,
-      mapType: MapType.hybrid,
-      initialCameraPosition: CameraPosition(
-        target: this.startPosition,
-        zoom: 14.4746,
-      ),
-      onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
-        mapController = controller;
-      },
-      indoorViewEnabled: true,
-    );
-  }
-
-  void updatePolylineRoute(RouteStep step, Color color) async {
-    var routeStep = step.coordinates
-        .map((coordinate) => LatLng(double.parse(coordinate.latitude),
-            double.parse(coordinate.longitude)))
-        .toList();
-
-    _markers.add(Marker(
-        markerId: MarkerId(routeStep[0].toString()),
-        position: routeStep[0],
-        infoWindow: InfoWindow(
-            title: step.transportCarrier,
-            snippet: step.instruction,
-            onTap: () {
-              print('dsajfkhlaksdfhajksf');
-            }),
-        onTap: () {
-          print('text');
-        }));
-
-    _polyline.add(Polyline(
-        polylineId:
-            PolylineId(DateTime.now().millisecondsSinceEpoch.toString()),
-        visible: true,
-        points: routeStep,
-        color: color,
-        geodesic: true,
-        onTap: () {
-          print('pressed me');
-        }));
-
-    polylineUpdate = PolylineUpdates.from(null, _polyline);
-    mapController.updatePolylines(polylineUpdate);
-
-    var markerUpdate = MarkerUpdates.from(null, _markers);
-    mapController.updateMarkers(markerUpdate);
   }
 
   Future<void> goToDestination(LatLng endPosition) async {
