@@ -1,7 +1,9 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lisbon_togo/src/repositories/direction_repository.dart';
 import 'package:lisbon_togo/src/repositories/stations_repository.dart';
+import 'package:lisbon_togo/src/shared/model/direction.dart';
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/stations.dart';
 import 'package:location/location.dart';
@@ -10,11 +12,12 @@ import 'package:rxdart/subjects.dart';
 
 class StationsBloc extends BlocBase {
   final StationsRepository stationRepository;
+  final DirectionRepository directionrepository;
 
-  StationsBloc(this.stationRepository);
+  StationsBloc(this.stationRepository,this.directionrepository);
 
   final _positionController = BehaviorSubject<LatLng>();
-  final _stationsController = BehaviorSubject<List<LineModel>>();
+  final _stationsController = BehaviorSubject<LineModel>();
 
   final currentLocation = BehaviorSubject.seeded(true);
   final stationsLocation = BehaviorSubject.seeded(true);
@@ -24,12 +27,23 @@ class StationsBloc extends BlocBase {
   Observable<PositionLocationModel> get curretPosition =>
       currentLocation.stream.asyncMap((v) => getCurrentPosition());
 
-  Observable<LineModel> get getStations => stationsLocation.stream
-      .asyncMap((station) => stationRepository.getStations(
+  Observable<LineModel> get getStations => stationsLocation.stream.asyncMap(
+      (station) => stationRepository.getStations(
           _positionController.value.latitude.toString(),
           _positionController.value.longitude.toString(),
           "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
           "${DateTime.now().hour}:${DateTime.now().minute}:00"));
+
+  Future<Directions> getDirections(
+      String stationLatitude, String stationLongitude) async {
+    var directions = await directionrepository.getDirections(
+        _positionController.value.latitude.toString(),
+        _positionController.value.longitude.toString(),
+        stationLatitude,
+        stationLongitude);
+
+    return directions;   
+  }
 
   Future<PositionLocationModel> getCurrentPosition() async {
     LocationData currentLocation;
