@@ -1,7 +1,8 @@
 //const String URL_API = "http://10.0.2.2:5000/api/";
 
 class ConstantsValues {
-  static const String URL_API = "http://192.168.1.67:5000/api/";
+  static const String URL_API = "http://35.197.210.28/api/";
+  //static const String URL_API = "http://192.168.1.67:5000/api/";
   static const String DIRECTION_KEY = "AIzaSyC7Exvy4fyWdWyONtpptneRWU4J54wHoF0";
 
   static String getDirection(String fromLatitude, String fromLongitude,

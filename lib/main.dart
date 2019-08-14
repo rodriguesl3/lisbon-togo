@@ -9,12 +9,14 @@ import 'package:lisbon_togo/src/repositories/route_repository.dart';
 import 'package:lisbon_togo/src/repositories/stations_repository.dart';
 import 'package:lisbon_togo/src/repositories/suggestions_repository.dart';
 import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:lisbon_togo/src/shared/global_position.dart';
 
 import 'src/home/home_tabs/blocs/routes_bloc.dart';
 
 void main() => runApp(BlocProvider(
       child: LisbonApp(),
       dependencies: [
+        Dependency((i)=>GlobalPosition()),
         Dependency((i) => RequestClient()),
         Dependency((i)=> RequestDirection()),
         Dependency(
@@ -39,6 +41,8 @@ class LisbonApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    GlobalPosition().getCurrentPosition();
+
     return MaterialApp(
       title: "Lisbon Transport",
       theme: ThemeData(

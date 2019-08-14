@@ -1,12 +1,11 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lisbon_togo/src/repositories/direction_repository.dart';
 import 'package:lisbon_togo/src/repositories/stations_repository.dart';
+import 'package:lisbon_togo/src/shared/global_position.dart';
 import 'package:lisbon_togo/src/shared/model/direction.dart';
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/stations.dart';
-import 'package:location/location.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -14,18 +13,27 @@ class StationsBloc extends BlocBase {
   final StationsRepository stationRepository;
   final DirectionRepository directionrepository;
 
-  StationsBloc(this.stationRepository,this.directionrepository);
+  StationsBloc(this.stationRepository, this.directionrepository);
 
   final _positionController = BehaviorSubject<LatLng>();
   final _stationsController = BehaviorSubject<LineModel>();
 
   final currentLocation = BehaviorSubject.seeded(true);
   final stationsLocation = BehaviorSubject.seeded(true);
+  final stationRoute = BehaviorSubject.seeded(false);
 
   Sink<LatLng> get currentPosition => _positionController.sink;
+  Sink<bool> get stationLoad => stationRoute.sink;
 
   Observable<PositionLocationModel> get curretPosition =>
       currentLocation.stream.asyncMap((v) => getCurrentPosition());
+
+  Observable<bool> get loadingStationRoute =>
+      stationsLocation.stream.asyncMap((v) => isLoadingPosition(v));
+
+  bool isLoadingPosition(index) {
+    return index;
+  }
 
   Observable<LineModel> get getStations => stationsLocation.stream.asyncMap(
       (station) => stationRepository.getStations(
@@ -42,32 +50,19 @@ class StationsBloc extends BlocBase {
         stationLatitude,
         stationLongitude);
 
-    return directions;   
+    return directions;
   }
 
   Future<PositionLocationModel> getCurrentPosition() async {
-    LocationData currentLocation;
-    PositionLocationModel positionLocation;
-    var location = Location();
-    try {
-      currentLocation = await location.getLocation();
-
-      positionLocation = PositionLocationModel(currentLocation, "", true);
-    } on PlatformException catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        positionLocation = PositionLocationModel(null, e.code, false);
-      }
-      positionLocation = PositionLocationModel(null, e.code, false);
-    } catch (err) {
-      print(err);
-    }
-    return positionLocation;
+    var currentPosition = await GlobalPosition().getCurrentPosition();
+    return currentPosition;
   }
 
   @override
   void dispose() {
     _stationsController.close();
     _positionController.close();
+    stationRoute.close();
 
     currentLocation.close();
     stationsLocation.close();

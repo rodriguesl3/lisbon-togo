@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:bloc_pattern/bloc_pattern.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:lisbon_togo/src/shared/global_position.dart';
 import 'package:lisbon_togo/src/shared/model/route.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:location/location.dart';
 
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/repositories/route_repository.dart';
@@ -48,22 +47,8 @@ class RoutesBloc extends BlocBase {
           "${DateTime.now().hour}:${DateTime.now().minute}:00",
           false));
 
-  Future<PositionLocationModel> getCurrentPosition() async {
-    LocationData currentLocation;
-    PositionLocationModel positionLocation;
-    var location = Location();
-    try {
-      currentLocation = await location.getLocation();
-
-      positionLocation = PositionLocationModel(currentLocation, "", true);
-    } on PlatformException catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        positionLocation = PositionLocationModel(null, e.code, false);
-      }
-      positionLocation = PositionLocationModel(null, e.code, false);
-    } catch (err) {
-      print(err);
-    }
-    return positionLocation;
+   Future<PositionLocationModel> getCurrentPosition() async {
+    var currentPosition = await GlobalPosition().getCurrentPosition();
+    return currentPosition;
   }
 }

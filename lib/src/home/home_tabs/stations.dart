@@ -1,7 +1,7 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:lisbon_togo/src/home/home_tabs/lines.dart';
+import 'package:lisbon_togo/src/shared/components/google_map_walking.dart';
 import 'package:lisbon_togo/src/shared/components/loading.dart';
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/stations.dart';
@@ -55,10 +55,10 @@ class _StationsState extends State<Stations> {
             return StreamBuilder<LineModel>(
               stream: bloc.getStations,
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return new Loading('Procurando proximidades.');
-                } else if (snapshot.hasError) {
+                if (snapshot.hasError) {
                   return new Loading('Problema para encontrar estações.');
+                } else if (!snapshot.hasData) {
+                  return new Loading('Procurando proximidades.');
                 }
                 var stations = snapshot.data.stopLocationList;
                 var nextBus = snapshot.data.nextBusList;
@@ -67,16 +67,24 @@ class _StationsState extends State<Stations> {
                   itemCount: stations.length,
                   itemBuilder: (context, index) => ListTile(
                     onTap: () {
-                      print(
-                          "${stations[index].latitude}, ${stations[index].longitude}");
-
-                      bloc
-                          .getDirections(stations[index].latitude,
+                      bloc.stationLoad.add(true);
+                      
+                      bloc.getDirections(stations[index].latitude,
                               stations[index].longitude)
-                          .then((response) => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Lines())));
+                          .then((response) {
+
+                        var listLng = List<LatLng>();
+                        response.routes[0].legs[0].steps.forEach((elm) =>
+                            listLng.addAll([
+                              LatLng(
+                                  elm.startLocation.lat, elm.startLocation.lng),
+                              LatLng(elm.endLocation.lat, elm.endLocation.lng)
+                            ]));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MapWalking(listLng)));
+                      });
                     },
                     title: Text(
                         "${stations[index].stopCode} - ${stations[index].address}"),
@@ -87,7 +95,15 @@ class _StationsState extends State<Stations> {
                     subtitle: Text(
                         "${nextBus[index].time} \n ${nextBus[index].line}"),
                     enabled: true,
-                    trailing: Icon(Icons.arrow_forward_ios),
+                    trailing: StreamBuilder<bool>(
+                      stream: bloc.loadingStationRoute,
+                      builder: (context, snapshot) {
+                        //if (!snapshot.data)
+                          return Icon(Icons.arrow_forward_ios);
+
+                        //if (snapshot.data) return CircularProgressIndicator();
+                      },
+                    ),
                     isThreeLine: true,
                     dense: true,
                   ),
