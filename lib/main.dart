@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lisbon_togo/src/blocs/directions_map_bloc.dart';
 import 'package:lisbon_togo/src/home/home_page.dart';
 import 'package:lisbon_togo/src/home/home_tabs/blocs/station_bloc.dart';
 import 'package:lisbon_togo/src/home/home_tabs/blocs/suggestion_bloc.dart';
@@ -16,9 +17,9 @@ import 'src/home/home_tabs/blocs/routes_bloc.dart';
 void main() => runApp(BlocProvider(
       child: LisbonApp(),
       dependencies: [
-        Dependency((i)=>GlobalPosition()),
+        Dependency((i) => GlobalPosition()),
         Dependency((i) => RequestClient()),
-        Dependency((i)=> RequestDirection()),
+        Dependency((i) => RequestDirection()),
         Dependency(
             (i) => SuggestionsRepository(i.get<RequestClient>().requestHttp())),
         Dependency(
@@ -32,7 +33,8 @@ void main() => runApp(BlocProvider(
         Bloc((i) => SuggestionBLoc(i.get<SuggestionsRepository>())),
         Bloc((i) => RoutesBloc(i.get<RouteRepository>())),
         Bloc((i) => StationsBloc(
-            i.get<StationsRepository>(), i.get<DirectionRepository>()))
+            i.get<StationsRepository>(), i.get<DirectionRepository>())),
+        Bloc((i) => DirectionsMapBloc())
       ],
     ));
 

@@ -15,27 +15,24 @@ class StationsBloc extends BlocBase {
 
   StationsBloc(this.stationRepository, this.directionrepository);
 
-  final _positionController = BehaviorSubject<LatLng>();
-  final _stationsController = BehaviorSubject<LineModel>();
-
-  final currentLocation = BehaviorSubject.seeded(true);
-  final stationsLocation = BehaviorSubject.seeded(true);
-  final stationRoute = BehaviorSubject.seeded(false);
+  final _currentLocationController = BehaviorSubject.seeded(true);
+  final _stationsController = BehaviorSubject.seeded(true);
+  final _positionController =
+      BehaviorSubject<LatLng>.seeded(new LatLng(0.0, 0.0));
 
   Sink<LatLng> get currentPosition => _positionController.sink;
-  Sink<bool> get stationLoad => stationRoute.sink;
 
   Observable<PositionLocationModel> get curretPosition =>
-      currentLocation.stream.asyncMap((v) => getCurrentPosition());
+      _currentLocationController.stream.asyncMap((v) => getCurrentPosition());
 
-  Observable<bool> get loadingStationRoute =>
-      stationsLocation.stream.asyncMap((v) => isLoadingPosition(v));
+  // Observable<bool> get loadingStationRoute =>
+  //     _stationsController.stream.asyncMap((v) => isLoadingPosition(v));
 
   bool isLoadingPosition(index) {
     return index;
   }
 
-  Observable<LineModel> get getStations => stationsLocation.stream.asyncMap(
+  Observable<LineModel> get getStations => _stationsController.stream.asyncMap(
       (station) => stationRepository.getStations(
           _positionController.value.latitude.toString(),
           _positionController.value.longitude.toString(),
@@ -54,18 +51,23 @@ class StationsBloc extends BlocBase {
   }
 
   Future<PositionLocationModel> getCurrentPosition() async {
-    var currentPosition = await GlobalPosition().getCurrentPosition();
-    return currentPosition;
+    var currentPositionValue = await GlobalPosition().getCurrentPosition();
+    
+    currentPosition.add(LatLng(currentPositionValue.locationData.latitude,
+        currentPositionValue.locationData.longitude));
+        
+    return currentPositionValue;
   }
 
   @override
   void dispose() {
     _stationsController.close();
     _positionController.close();
-    stationRoute.close();
+    _currentLocationController.close();
+    // stationRoute.close();
 
-    currentLocation.close();
-    stationsLocation.close();
+    // currentLocation.close();
+    // stationsLocation.close();
     super.dispose();
   }
 }

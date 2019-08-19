@@ -15,34 +15,146 @@ class Stations extends StatefulWidget {
 }
 
 class _StationsState extends State<Stations> {
+  TextEditingController _searchQuery;
+  bool _isSearching = false;
+  String searchQuery = "Search query";
+  static final GlobalKey<ScaffoldState> scaffoldKey =
+      new GlobalKey<ScaffoldState>();
+
+  List<NextBusModel> _nextBusList;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchQuery = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchQuery.dispose();
+    super.dispose();
+  }
+
+  List<Widget> _buildActions() {
+    if (_isSearching) {
+      return <Widget>[
+        new IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: () {
+            if (_searchQuery == null || _searchQuery.text.isEmpty) {
+              Navigator.pop(context);
+              return;
+            }
+            _clearSearchQuery();
+          },
+        ),
+      ];
+    }
+
+    return <Widget>[
+      new IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: _startSearch,
+      ),
+    ];
+  }
+
+  void updateSearchQuery(String newQuery) {
+    setState(() {
+      searchQuery = newQuery;
+      _nextBusList = _nextBusList.where((elm) => elm.line.contains(newQuery));
+    });
+    print("search query " + newQuery);
+  }
+
+  Widget _buildSearchField() {
+    return new TextField(
+      controller: _searchQuery,
+      autofocus: true,
+      decoration: const InputDecoration(
+        hintText: 'Search...',
+        border: InputBorder.none,
+        hintStyle: const TextStyle(color: Colors.white30),
+      ),
+      style: const TextStyle(color: Colors.white, fontSize: 16.0),
+      onChanged: updateSearchQuery,
+    );
+  }
+
+  Widget _buildTitle(BuildContext context, String textTitle) {
+    var horizontalTitleAlignment = CrossAxisAlignment.center;
+
+    return new InkWell(
+      onTap: () => scaffoldKey.currentState.openDrawer(),
+      child: new Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: horizontalTitleAlignment,
+          children: <Widget>[
+            Text(textTitle),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _clearSearchQuery() {
+    print("close search box");
+    setState(() {
+      _searchQuery.clear();
+      updateSearchQuery("Search query");
+    });
+  }
+
+  void _stopSearching() {
+    _clearSearchQuery();
+    setState(() {
+      _isSearching = false;
+    });
+  }
+
+  void _startSearch() {
+    print("open search box");
+    ModalRoute.of(context)
+        .addLocalHistoryEntry(new LocalHistoryEntry(onRemove: _stopSearching));
+
+    setState(() {
+      _isSearching = true;
+    });
+  }
+
+  Widget _getAppBar(String textTitle) {
+    var appBar = AppBar(
+      leading: _isSearching ? const BackButton() : null,
+      title:
+          _isSearching ? _buildSearchField() : _buildTitle(context, textTitle),
+      actions: _buildActions(),
+      backgroundColor: Colors.white,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(15.0)),
+          boxShadow: [new BoxShadow(blurRadius: 15.0)],
+          gradient: LinearGradient(
+              begin: Alignment.center,
+              end: Alignment.centerRight,
+              colors: [Color(0xFF673ab7), Color(0xFF3f51b5)]),
+        ),
+      ),
+    );
+    return appBar;
+  }
+
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.getBloc<StationsBloc>();
 
     var scaffold = Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Text("Stations", textAlign: TextAlign.center),
-        backgroundColor: Colors.white,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(15.0)),
-            boxShadow: [new BoxShadow(blurRadius: 15.0)],
-            gradient: LinearGradient(
-                begin: Alignment.center,
-                end: Alignment.centerRight,
-                colors: [Color(0xFF673ab7), Color(0xFF3f51b5)]),
-          ),
-        ),
-      ),
+      appBar: this._getAppBar("Stations"),
       body: Container(
         child: StreamBuilder<PositionLocationModel>(
           stream: bloc.curretPosition,
+          initialData: null,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return new Loading('Procurando sua localização.');
@@ -61,18 +173,21 @@ class _StationsState extends State<Stations> {
                   return new Loading('Procurando proximidades.');
                 }
                 var stations = snapshot.data.stopLocationList;
-                var nextBus = snapshot.data.nextBusList;
+                _nextBusList = snapshot.data.nextBusList;
 
                 return ListView.builder(
                   itemCount: stations.length,
                   itemBuilder: (context, index) => ListTile(
                     onTap: () {
-                      bloc.stationLoad.add(true);
-                      
-                      bloc.getDirections(stations[index].latitude,
+                      setState(() {
+                        stations[index].isSearching = true;
+                      });
+
+                      print(index);
+                      bloc
+                          .getDirections(stations[index].latitude,
                               stations[index].longitude)
                           .then((response) {
-
                         var listLng = List<LatLng>();
                         response.routes[0].legs[0].steps.forEach((elm) =>
                             listLng.addAll([
@@ -83,27 +198,24 @@ class _StationsState extends State<Stations> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => MapWalking(listLng)));
+                                builder: (context) => MapWalking(listLng,
+                                    response.routes[0].legs[0].steps)));
                       });
                     },
                     title: Text(
-                        "${stations[index].stopCode} - ${stations[index].address}"),
+                        "${_nextBusList[index].line}\n${_nextBusList[index].time}"),
                     leading: Image(
                       image: NetworkImage(
-                          "https://www.transporlis.pt/${nextBus[index].image}"),
+                          "https://www.transporlis.pt/${_nextBusList[index].image}"),
                     ),
                     subtitle: Text(
-                        "${nextBus[index].time} \n ${nextBus[index].line}"),
+                        "${stations[index].stopCode} - ${stations[index].address}"),
                     enabled: true,
-                    trailing: StreamBuilder<bool>(
-                      stream: bloc.loadingStationRoute,
-                      builder: (context, snapshot) {
-                        //if (!snapshot.data)
-                          return Icon(Icons.arrow_forward_ios);
-
-                        //if (snapshot.data) return CircularProgressIndicator();
-                      },
-                    ),
+                    trailing: (stations[index].isSearching
+                        ? CircularProgressIndicator()
+                        : FlatButton(
+                            child: Icon(Icons.arrow_forward_ios),
+                            onPressed: () {})),
                     isThreeLine: true,
                     dense: true,
                   ),

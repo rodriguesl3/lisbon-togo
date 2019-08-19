@@ -36,8 +36,10 @@ class StopLocationModel {
   final String longitude;
   final String address;
   final String stopCode;
+  bool isSearching;
 
-  StopLocationModel(this.latitude, this.longitude, this.address, this.stopCode);
+  StopLocationModel(this.latitude, this.longitude, this.address, this.stopCode,
+      {this.isSearching: false});
 
   factory StopLocationModel.fromJson(Map<String, dynamic> json) =>
       _$StopLocationModelFromJson(json);

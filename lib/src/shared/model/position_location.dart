@@ -7,5 +7,6 @@ class PositionLocationModel
   final String response;
   final bool hasPermission;
   
+  
   PositionLocationModel(this.locationData, this.response,this.hasPermission);
 }

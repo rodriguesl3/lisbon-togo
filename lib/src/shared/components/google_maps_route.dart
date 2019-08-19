@@ -1,3 +1,5 @@
+import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:lisbon_togo/src/blocs/directions_map_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:math';
@@ -36,6 +38,8 @@ class MapSampleState extends State<MapSample> {
 
   @override
   Widget build(BuildContext context) {
+    var bloc = BlocProvider.getBloc<DirectionsMapBloc>();
+
     _markers.add(Marker(
       markerId: MarkerId(startPosition.toString()),
       position: startPosition,
@@ -51,23 +55,37 @@ class MapSampleState extends State<MapSample> {
     latlng.add(startPosition);
     latlng.add(endPosition);
 
+    bloc.sinkMarker.add(_markers);
+
     return new Scaffold(
       body: Stack(
         overflow: Overflow.visible,
         children: <Widget>[
-          GoogleMap(
-            polylines: _polyline,
-            markers: _markers,
-            mapType: MapType.hybrid,
-            initialCameraPosition: CameraPosition(
-              target: this.startPosition,
-              zoom: 14.4746,
-            ),
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-            indoorViewEnabled: true,
-          ),
+          StreamBuilder<Set<Marker>>(
+              stream: bloc.markerObserver,
+              builder: (context, snapshot) {
+                var makerSnapshot = snapshot.data;
+
+                return StreamBuilder<Set<Polyline>>(
+                    stream: bloc.polylineObserver,
+                    builder: (context, snapshot) {
+                      var polylineSnapshot = snapshot.data;
+
+                      return GoogleMap(
+                        polylines: polylineSnapshot,
+                        markers: makerSnapshot,
+                        mapType: MapType.hybrid,
+                        initialCameraPosition: CameraPosition(
+                          target: this.startPosition,
+                          zoom: 14.4746,
+                        ),
+                        onMapCreated: (GoogleMapController controller) {
+                          _controller.complete(controller);
+                        },
+                        indoorViewEnabled: true,
+                      );
+                    });
+              }),
           Positioned(
             height: 150.0,
             width: MediaQuery.of(context).size.width,
@@ -161,30 +179,32 @@ class MapSampleState extends State<MapSample> {
                                                   coordinate.longitude)))
                                           .toList();
 
-                                      setState(() {
-                                        _markers.add(Marker(
-                                            markerId: MarkerId(
-                                                routeStep[0].toString()),
-                                            position: routeStep[0],
-                                            infoWindow: InfoWindow(
-                                                title: step.transportCarrier,
-                                                snippet: step.instruction,
-                                                onTap: () {
-                                                  print('dsajfkhlaksdfhajksf');
-                                                }),
-                                            onTap: () {
-                                              print('text');
-                                            }));
-                                        _polyline.add(Polyline(
-                                            polylineId: PolylineId(Uuid().v1()),
-                                            visible: true,
-                                            points: routeStep,
-                                            color: color,
-                                            geodesic: true,
-                                            onTap: () {
-                                              print('pressed me');
-                                            }));
-                                      });
+                                      _markers.add(Marker(
+                                          markerId:
+                                              MarkerId(routeStep[0].toString()),
+                                          position: routeStep[0],
+                                          infoWindow: InfoWindow(
+                                              title: step.transportCarrier,
+                                              snippet: step.instruction,
+                                              onTap: () {
+                                                print('dsajfkhlaksdfhajksf');
+                                              }),
+                                          onTap: () {
+                                            print('text');
+                                          }));
+
+                                      _polyline.add(Polyline(
+                                          polylineId: PolylineId(Uuid().v1()),
+                                          visible: true,
+                                          points: routeStep,
+                                          color: color,
+                                          geodesic: true,
+                                          onTap: () {
+                                            print('pressed me');
+                                          }));
+
+                                      bloc.sinkMarker.add(_markers);
+                                      bloc.sinkPolyline.add(_polyline);
                                     });
                                   },
                                   child: Row(
