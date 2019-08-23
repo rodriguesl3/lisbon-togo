@@ -43,13 +43,13 @@ class MapSampleState extends State<MapSample> {
     _markers.add(Marker(
       markerId: MarkerId(startPosition.toString()),
       position: startPosition,
-      infoWindow: InfoWindow(title: 'You are here'),
+      infoWindow: InfoWindow(title: 'Você está aqui'),
     ));
 
     _markers.add(Marker(
       markerId: MarkerId(endPosition.toString()),
       position: endPosition,
-      infoWindow: InfoWindow(title: 'Your destination'),
+      infoWindow: InfoWindow(title: 'Seu destino'),
     ));
 
     latlng.add(startPosition);
@@ -146,15 +146,16 @@ class MapSampleState extends State<MapSample> {
                               children: <Widget>[
                                 FlatButton(
                                   onPressed: () {
-                                    setState(() {
-                                      _markers.clear();
-                                      _polyline.clear();
-                                    });
+                                    _markers.clear();
+                                    _polyline.clear();
+
+                                    bloc.sinkMarker.add(_markers);
+                                    bloc.sinkPolyline.add(_polyline);
+
                                     routeList[index]
                                         .travelInformation
                                         .routeSteps
                                         .forEach((step) {
-                                      //return routes;
                                       var colors = [
                                         Colors.blue,
                                         Colors.yellow,

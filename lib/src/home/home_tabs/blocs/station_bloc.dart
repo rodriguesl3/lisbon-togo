@@ -15,29 +15,36 @@ class StationsBloc extends BlocBase {
 
   StationsBloc(this.stationRepository, this.directionrepository);
 
-  final _currentLocationController = BehaviorSubject.seeded(true);
-  final _stationsController = BehaviorSubject.seeded(true);
+  final BehaviorSubject<PositionLocationModel> _currentLocationController =
+      BehaviorSubject.seeded(PositionLocationModel(null, "", false));
+  final BehaviorSubject<LineModel> _stationsController =
+      BehaviorSubject.seeded(LineModel(null, null));
   final _positionController =
       BehaviorSubject<LatLng>.seeded(new LatLng(0.0, 0.0));
 
   Sink<LatLng> get currentPosition => _positionController.sink;
-
   Observable<PositionLocationModel> get curretPosition =>
       _currentLocationController.stream.asyncMap((v) => getCurrentPosition());
 
-  // Observable<bool> get loadingStationRoute =>
-  //     _stationsController.stream.asyncMap((v) => isLoadingPosition(v));
-
-  bool isLoadingPosition(index) {
-    return index;
-  }
-
+  Sink<LineModel> get setStation => _stationsController.sink;
+  Observable<LineModel> get listStation => _stationsController.stream;
+  
   Observable<LineModel> get getStations => _stationsController.stream.asyncMap(
       (station) => stationRepository.getStations(
           _positionController.value.latitude.toString(),
           _positionController.value.longitude.toString(),
           "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
           "${DateTime.now().hour}:${DateTime.now().minute}:00"));
+
+
+  void requestStations() async {
+   setStation.add( await stationRepository.getStations(
+          _positionController.value.latitude.toString(),
+          _positionController.value.longitude.toString(),
+          "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+          "${DateTime.now().hour}:${DateTime.now().minute}:00"));
+  }
+
 
   Future<Directions> getDirections(
       String stationLatitude, String stationLongitude) async {
@@ -52,10 +59,10 @@ class StationsBloc extends BlocBase {
 
   Future<PositionLocationModel> getCurrentPosition() async {
     var currentPositionValue = await GlobalPosition().getCurrentPosition();
-    
+
     currentPosition.add(LatLng(currentPositionValue.locationData.latitude,
         currentPositionValue.locationData.longitude));
-        
+
     return currentPositionValue;
   }
 

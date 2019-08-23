@@ -161,9 +161,11 @@ class _StationsState extends State<Stations> {
             } else if (snapshot.hasError) {
               return new Loading('Problema para encontrar localização');
             }
+            
             var position = snapshot.data;
-            bloc.currentPosition.add(new LatLng(position.locationData.latitude,
-                position.locationData.longitude));
+            bloc.currentPosition.add(new LatLng(position.locationData.latitude,position.locationData.longitude));
+            
+
             return StreamBuilder<LineModel>(
               stream: bloc.getStations,
               builder: (context, snapshot) {
@@ -183,7 +185,6 @@ class _StationsState extends State<Stations> {
                         stations[index].isSearching = true;
                       });
 
-                      print(index);
                       bloc
                           .getDirections(stations[index].latitude,
                               stations[index].longitude)
@@ -195,6 +196,7 @@ class _StationsState extends State<Stations> {
                                   elm.startLocation.lat, elm.startLocation.lng),
                               LatLng(elm.endLocation.lat, elm.endLocation.lng)
                             ]));
+
                         Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -215,7 +217,32 @@ class _StationsState extends State<Stations> {
                         ? CircularProgressIndicator()
                         : FlatButton(
                             child: Icon(Icons.arrow_forward_ios),
-                            onPressed: () {})),
+                            onPressed: () {
+                              setState(() {
+                                stations[index].isSearching = true;
+                              });
+
+                              bloc
+                                  .getDirections(stations[index].latitude,
+                                      stations[index].longitude)
+                                  .then((response) {
+                                var listLng = List<LatLng>();
+                                response.routes[0].legs[0].steps
+                                    .forEach((elm) => listLng.addAll([
+                                          LatLng(elm.startLocation.lat,
+                                              elm.startLocation.lng),
+                                          LatLng(elm.endLocation.lat,
+                                              elm.endLocation.lng)
+                                        ]));
+
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => MapWalking(
+                                            listLng,
+                                            response.routes[0].legs[0].steps)));
+                              });
+                            })),
                     isThreeLine: true,
                     dense: true,
                   ),
