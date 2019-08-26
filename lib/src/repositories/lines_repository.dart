@@ -6,11 +6,15 @@ class LinesRepository {
 
   LinesRepository(this.requestClient);
 
-  Future<CarrierLineModel> getLines(String searchQuery)async{
+  Future<CarrierLineModel> getLines(String searchQuery) async {
     var path = "/time/carriers?searchQuery=$searchQuery";
 
     Response response = await requestClient.get(path);
-    
+
     return CarrierLineModel.fromJson(response.data);
+  }
+
+  Future<CarrierLineModel> getLocalLines(dynamic lines) async{
+    return CarrierLineModel.fromJson(lines);
   }
 }
