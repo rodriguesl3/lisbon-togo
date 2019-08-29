@@ -6,7 +6,7 @@ import 'package:lisbon_togo/src/shared/components/loading.dart';
 import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/stations.dart';
 
-import 'blocs/station_bloc.dart';
+import '../../blocs/station_bloc.dart';
 
 class Stations extends StatefulWidget {
   Stations({Key key}) : super(key: key);

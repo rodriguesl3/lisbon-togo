@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lisbon_togo/src/home/details/suggestion_details.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
-import 'package:lisbon_togo/src/home/home_tabs/blocs/suggestion_bloc.dart';
+import 'package:lisbon_togo/src/blocs/suggestion_bloc.dart';
 import 'package:lisbon_togo/src/shared/model/suggestion.dart';
 
 class SugestionPage extends StatefulWidget {
@@ -41,7 +41,7 @@ class _SugestionPageState extends State<SugestionPage> {
                     child: Column(
                       children: <Widget>[
                         cardImage,
-                        Padding(
+                      Padding(
                           padding: EdgeInsets.fromLTRB(10.0, 20.0, 10.0, 10.0),
                           child: Text(
                             'Nice place to visit. Make sure that you not going to wrong place. :)',

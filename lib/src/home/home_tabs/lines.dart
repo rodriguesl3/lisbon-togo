@@ -4,9 +4,10 @@ import 'dart:math';
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
+import 'package:lisbon_togo/src/shared/components/google_map_line.dart';
 import 'package:lisbon_togo/src/shared/model/carrier_line.dart';
 
-import 'blocs/lines_bloc.dart';
+import '../../blocs/lines_bloc.dart';
 
 class Lines extends StatelessWidget {
   const Lines({Key key}) : super(key: key);
@@ -28,11 +29,9 @@ class Lines extends StatelessWidget {
           child: TextField(
             autocorrect: true,
             onChanged: (data) {
-              Future.delayed(Duration(seconds: 1)).then((res) {
-                bloc.sinkSearchQuery.add(data);
-                getLines(context).then((res) {
-                  bloc.setCarrierLines(lines: res);
-                });
+              bloc.sinkSearchQuery.add(data);
+              getLines(context).then((res) {
+                bloc.setCarrierLines(lines: res);
               });
             },
             style: TextStyle(
@@ -114,6 +113,11 @@ class Lines extends StatelessWidget {
                 title: Text(items[i].lineName),
                 trailing: Icon(Icons.arrow_forward_ios),
                 onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MapLineDetail(items[i])));
+
                   print('${items[i].lineName} was pressed');
                 },
               ),

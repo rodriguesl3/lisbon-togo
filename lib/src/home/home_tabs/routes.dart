@@ -11,7 +11,7 @@ import 'package:lisbon_togo/src/shared/model/route.dart';
 import 'package:location/location.dart';
 // import 'package:latlong/latlong.dart';
 
-import 'blocs/routes_bloc.dart';
+import '../../blocs/routes_bloc.dart';
 
 class Routes extends StatefulWidget {
   double initialLatitude, initialLongitude;

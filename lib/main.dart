@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lisbon_togo/src/blocs/directions_map_bloc.dart';
+import 'package:lisbon_togo/src/blocs/lines_detail_bloc.dart';
 import 'package:lisbon_togo/src/home/home_page.dart';
-import 'package:lisbon_togo/src/home/home_tabs/blocs/lines_bloc.dart';
-import 'package:lisbon_togo/src/home/home_tabs/blocs/station_bloc.dart';
-import 'package:lisbon_togo/src/home/home_tabs/blocs/suggestion_bloc.dart';
+import 'package:lisbon_togo/src/blocs/lines_bloc.dart';
+import 'package:lisbon_togo/src/blocs/station_bloc.dart';
+import 'package:lisbon_togo/src/blocs/suggestion_bloc.dart';
 import 'package:lisbon_togo/src/repositories/direction_repository.dart';
 import 'package:lisbon_togo/src/repositories/lines_repository.dart';
 import 'package:lisbon_togo/src/repositories/request_client_http.dart';
@@ -14,7 +15,7 @@ import 'package:lisbon_togo/src/repositories/suggestions_repository.dart';
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:lisbon_togo/src/shared/global_position.dart';
 
-import 'src/home/home_tabs/blocs/routes_bloc.dart';
+import 'src/blocs/routes_bloc.dart';
 
 void main() => runApp(BlocProvider(
       child: LisbonApp(),
@@ -30,7 +31,10 @@ void main() => runApp(BlocProvider(
             (i) => StationsRepository(i.get<RequestClient>().requestHttp())),
         Dependency((i) =>
             DirectionRepository(i.get<RequestDirection>().requestHttp())),
-        Dependency((i) => LinesRepository(i.get<RequestClient>().requestHttp()))
+        Dependency(
+            (i) => LinesRepository(i.get<RequestClient>().requestHttp())),
+        Dependency(
+            (i) => LineDetailRepository(i.get<RequestClient>().requestHttp()))
       ],
       blocs: [
         Bloc((i) => SuggestionBLoc(i.get<SuggestionsRepository>())),
@@ -38,7 +42,8 @@ void main() => runApp(BlocProvider(
         Bloc((i) => StationsBloc(
             i.get<StationsRepository>(), i.get<DirectionRepository>())),
         Bloc((i) => DirectionsMapBloc()),
-        Bloc((i) => LinesBloc(i.get<LinesRepository>()))
+        Bloc((i) => LinesBloc(i.get<LinesRepository>())),
+        Bloc((i) => LinesDetailBloc(i.get<LineDetailRepository>()))
       ],
     ));
 
