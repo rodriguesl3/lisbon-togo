@@ -18,8 +18,57 @@ class MapLineDetail extends StatelessWidget {
 
     bloc.sinkInformation.add(lineInformation);
 
-    return SafeArea(
-      child: StreamBuilder<List<Object>>(
+    return Scaffold(
+      appBar: AppBar(title: Text('Line R')),
+      endDrawer: Drawer(
+        child: Container(
+            color: Color(0xFF673ab7),
+            child: StreamBuilder<List<LineRouteDetailModel>>(
+              stream: bloc.listLineDetail,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Loading('Problema para encontrar detalhes');
+                }
+                if (!snapshot.hasData || snapshot.data[0] == null) {
+                  return Loading('Carregando informações');
+                }
+
+                final stepsList = List<Step>();
+
+                stepsList.addAll(snapshot.data.map((elm) => Step(
+                      title: Text(
+                        "Nome: ${elm.stopName.replaceAll("-", "\n").replaceAll("/", "\n/").replaceAll("(", "\n(")}",
+                        softWrap: true,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      isActive: true,
+                      content: Text(
+                        "Código: ${elm.stopCode}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    )));
+
+                return Stepper(
+                    type: StepperType.vertical,
+                    steps: stepsList,
+                    controlsBuilder: (BuildContext context,
+                        {VoidCallback onStepContinue,
+                        VoidCallback onStepCancel}) {
+                      return Row(
+                        children: <Widget>[
+                          Container(
+                            child: null,
+                          ),
+                          Container(
+                            child: null,
+                          ),
+                        ],
+                      );
+                    });
+              },
+            )),
+      ),
+      body: StreamBuilder<List<Object>>(
           stream: bloc.readySubmit,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -31,7 +80,6 @@ class MapLineDetail extends StatelessWidget {
 
             var lines = snapshot.data[0] as List<LineRouteDetailModel>;
             var mapPolyline = snapshot.data[2] as Set<Polyline>;
-
 
             return GoogleMap(
               markers: snapshot.data[1],

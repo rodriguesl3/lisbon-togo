@@ -7,7 +7,6 @@ import 'package:lisbon_togo/src/shared/model/line_detail.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rxdart/subjects.dart';
 
-import 'package:async/async.dart';
 import 'package:uuid/uuid.dart';
 
 class LinesDetailBloc extends BlocBase {
@@ -46,13 +45,18 @@ class LinesDetailBloc extends BlocBase {
               DateTime.now().minute.toString(),
             ))
         .map((data) {
-      data.where((elm) => elm.routGeolocationList != null).forEach((elm) {
+      data.forEach((elm) {
         _markers.add(Marker(
+          infoWindow: InfoWindow(
+            title: elm.stopName,
+          ),
           markerId: MarkerId(Uuid().v4()),
           position: LatLng(
               double.parse(elm.stopLatitude), double.parse(elm.stopLongitude)),
         ));
+      });
 
+      data.where((elm) => elm.routGeolocationList != null).forEach((elm) {
         var positionList = elm.routGeolocationList
             .map((location) => LatLng(double.parse(location.longitude),
                 double.parse(location.latitude)))
