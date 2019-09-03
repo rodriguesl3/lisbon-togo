@@ -16,10 +16,17 @@ class MapLineDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.getBloc<LinesDetailBloc>();
 
+    bloc.sinkLineDetail.add(List<LineRouteDetailModel>());
     bloc.sinkInformation.add(lineInformation);
 
+    bloc.buildLines();
+
+    return buildMaps(context, bloc);
+  }
+
+  Widget buildMaps(BuildContext context, LinesDetailBloc bloc) {
     return Scaffold(
-      appBar: AppBar(title: Text('Line R')),
+      appBar: AppBar(title: Text(this.lineInformation.lineName)),
       endDrawer: Drawer(
         child: Container(
             color: Color(0xFF673ab7),
@@ -29,15 +36,13 @@ class MapLineDetail extends StatelessWidget {
                 if (snapshot.hasError) {
                   return Loading('Problema para encontrar detalhes');
                 }
-                if (!snapshot.hasData || snapshot.data[0] == null) {
+                if (!snapshot.hasData || snapshot.data[0] == null)
                   return Loading('Carregando informações');
-                }
 
                 final stepsList = List<Step>();
-
                 stepsList.addAll(snapshot.data.map((elm) => Step(
                       title: Text(
-                        "Nome: ${elm.stopName.replaceAll("-", "\n").replaceAll("/", "\n/").replaceAll("(", "\n(")}",
+                        "Nome: ${elm.stopName.replaceAll("-", "\n").replaceAll("/", "\n/").replaceAll("(", "\n(")} '\n Time: ${elm.time}",
                         softWrap: true,
                         style: TextStyle(color: Colors.white),
                       ),
@@ -74,12 +79,20 @@ class MapLineDetail extends StatelessWidget {
             if (snapshot.hasError) {
               return Loading('Problema para encontrar detalhes');
             }
-            if (!snapshot.hasData || snapshot.data[0] == null) {
+            if (!snapshot.hasData ||
+                snapshot.data[0] == null ||
+                (snapshot.data[0] as List<LineRouteDetailModel>).length == 0) {
               return Loading('Carregando informações');
             }
 
             var lines = snapshot.data[0] as List<LineRouteDetailModel>;
             var mapPolyline = snapshot.data[2] as Set<Polyline>;
+            final CameraPosition startRoute = CameraPosition(
+                bearing: 192.8334901395799,
+                target: LatLng(double.parse(lines[0].stopLatitude),
+                    double.parse(lines[0].stopLongitude)),
+                // tilt: 59.440717697143555,
+                zoom: 19.151926040649414);
 
             return GoogleMap(
               markers: snapshot.data[1],
@@ -89,7 +102,10 @@ class MapLineDetail extends StatelessWidget {
                   target: LatLng(double.parse(lines[0].stopLatitude),
                       double.parse(lines[0].stopLongitude)),
                   zoom: 14.4766),
-              onMapCreated: (GoogleMapController controller) {},
+              onMapCreated: (GoogleMapController controller) {
+                controller
+                    .animateCamera(CameraUpdate.newCameraPosition(startRoute));
+              },
               indoorViewEnabled: true,
             );
           }),

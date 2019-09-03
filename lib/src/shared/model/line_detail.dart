@@ -12,6 +12,7 @@ class LineRouteDetailModel {
   String stopName;
   String stopLatitude;
   String stopLongitude;
+  String time;
   List<RoutGeolocationList> routGeolocationList;
 
   LineRouteDetailModel({
@@ -19,6 +20,7 @@ class LineRouteDetailModel {
     this.stopName,
     this.stopLatitude,
     this.stopLongitude,
+    this.time,
     this.routGeolocationList,
   });
 
@@ -28,6 +30,7 @@ class LineRouteDetailModel {
         stopName: json["stopName"],
         stopLatitude: json["stopLatitude"],
         stopLongitude: json["stopLongitude"],
+        time: json["time"],
         routGeolocationList: json["routGeolocationList"] == null
             ? null
             : new List<RoutGeolocationList>.from(json["routGeolocationList"]
@@ -39,6 +42,7 @@ class LineRouteDetailModel {
         "stopName": stopName,
         "stopLatitude": stopLatitude,
         "stopLongitude": stopLongitude,
+        "time": time,
         "routGeolocationList":
             new List<dynamic>.from(routGeolocationList.map((x) => x.toJson())),
       };

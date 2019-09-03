@@ -24,7 +24,7 @@ class LinesDetailBloc extends BlocBase {
   Sink<Set<Polyline>> get sinkPolyline => _polylineController.sink;
   Observable<Set<Polyline>> get listPolyline => _polylineController.stream;
 
-  final BehaviorSubject _informationController =
+  final BehaviorSubject<List<LineRouteDetailModel>> _informationController =
       BehaviorSubject<List<LineRouteDetailModel>>.seeded(
           List<LineRouteDetailModel>());
 
@@ -33,22 +33,35 @@ class LinesDetailBloc extends BlocBase {
 
   Sink<Data> get sinkInformation => _lineInformationController.sink;
 
-  Observable<List<LineRouteDetailModel>> get listLineDetail {
+  Sink<List<LineRouteDetailModel>> get sinkLineDetail =>
+      _informationController.sink;
+
+  Observable<List<LineRouteDetailModel>> get listLineDetail =>
+      _informationController.stream;
+
+  Observable<List<Object>> get readySubmit => Observable.combineLatest3(
+      listLineDetail,
+      listMarker,
+      listPolyline,
+      (linesDetail, markers, polylines) => [linesDetail, markers, polylines]);
+
+  Future buildLines() async {
     final Set<Polyline> _polyline = {};
     final Set<Marker> _markers = {};
 
-    var infoResult = _informationController.stream
-        .asyncMap((inf) => repository.getLineDetails(
-              _lineInformationController.value.detailLineUrl.split('&')[2],
-              _lineInformationController.value.detailLineUrl.split('&')[3],
-              DateTime.now().hour.toString(),
-              DateTime.now().minute.toString(),
-            ))
-        .map((data) {
+    await repository
+        .getLineDetails(
+      _lineInformationController.value.detailLineUrl.split('&')[2],
+      _lineInformationController.value.detailLineUrl.split('&')[3],
+      DateTime.now().hour.toString(),
+      DateTime.now().minute.toString(),
+    )
+        .then((data) {
       data.forEach((elm) {
         _markers.add(Marker(
           infoWindow: InfoWindow(
-            title: elm.stopName,
+            title: 'Stop: ${elm.stopName}' ,
+            snippet: 'Time: ${elm.time}'
           ),
           markerId: MarkerId(Uuid().v4()),
           position: LatLng(
@@ -71,17 +84,9 @@ class LinesDetailBloc extends BlocBase {
       sinkMarker.add(_markers);
       sinkPolyline.add(_polyline);
 
-      return data;
+      sinkLineDetail.add(data);
     });
-
-    return infoResult;
   }
-
-  Observable<List<Object>> get readySubmit => Observable.combineLatest3(
-      listLineDetail,
-      listMarker,
-      listPolyline,
-      (linesDetail, markers, polylines) => [linesDetail, markers, polylines]);
 
   @override
   void dispose() {
