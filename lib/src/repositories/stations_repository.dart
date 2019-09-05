@@ -5,11 +5,12 @@ class StationsRepository {
   final Dio requestClient;
   StationsRepository(this.requestClient);
 
-  Future<LineModel> getStations(
+  Future<List<LineModel>> getStations(
       String latitude, String longitude, String date, String hour) async {
     var path =
         "/stops?latitude=${latitude}&longitude=${longitude}&data=${date}&hora=$hour";
     Response response = await requestClient.get(path);
-    return LineModel.fromJson(response.data);
+    return (response.data as List)
+          .map((station)=> LineModel.fromJson(station)).toList();
   }
 }

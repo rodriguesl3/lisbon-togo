@@ -21,7 +21,7 @@ class _StationsState extends State<Stations> {
   static final GlobalKey<ScaffoldState> scaffoldKey =
       new GlobalKey<ScaffoldState>();
 
-  List<NextBusModel> _nextBusList;
+  List<NextBus> _nextBusList;
 
   @override
   void initState() {
@@ -161,12 +161,12 @@ class _StationsState extends State<Stations> {
             } else if (snapshot.hasError) {
               return new Loading('Problema para encontrar localização');
             }
-            
-            var position = snapshot.data;
-            bloc.currentPosition.add(new LatLng(position.locationData.latitude,position.locationData.longitude));
-            
 
-            return StreamBuilder<LineModel>(
+            var position = snapshot.data;
+            bloc.currentPosition.add(new LatLng(position.locationData.latitude,
+                position.locationData.longitude));
+
+            return StreamBuilder<List<LineModel>>(
               stream: bloc.getStations,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -174,16 +174,17 @@ class _StationsState extends State<Stations> {
                 } else if (!snapshot.hasData) {
                   return new Loading('Procurando proximidades.');
                 }
-                var stations = snapshot.data.stopLocationList;
-                _nextBusList = snapshot.data.nextBusList;
+                var stations = snapshot.data.where((station)=>station.nextBuses.length > 0).toList();
 
-                return ListView.builder(
+                return ListView.separated(
+                  scrollDirection: Axis.vertical,
+                  separatorBuilder: (context, index) => Divider(color: Colors.black,),
                   itemCount: stations.length,
                   itemBuilder: (context, index) => ListTile(
                     onTap: () {
-                      setState(() {
-                        stations[index].isSearching = true;
-                      });
+                      // setState(() {
+                      //   stations[index].isSearching = true;
+                      // });
 
                       bloc
                           .getDirections(stations[index].latitude,
@@ -204,45 +205,50 @@ class _StationsState extends State<Stations> {
                                     response.routes[0].legs[0].steps)));
                       });
                     },
-                    title: Text(
-                        "${_nextBusList[index].line}\n${_nextBusList[index].time}"),
+                    title: Text("${stations[index].nextBuses[0].address}"),
                     leading: Image(
                       image: NetworkImage(
-                          "https://www.transporlis.pt/${_nextBusList[index].image}"),
+                          "https://www.transporlis.pt/${stations[0].nextBuses[0].image}"),
                     ),
-                    subtitle: Text(
-                        "${stations[index].stopCode} - ${stations[index].address}"),
+                    subtitle: Column(
+                      children: stations[index]
+                          .nextBuses
+                          .map((station) =>
+                              Text('${station.line} - ${station.time}'))
+                          .toList(),
+                    ),
+                    //Text("${stations[index].stopCode} - ${stations[index].address}"),
                     enabled: true,
-                    trailing: (stations[index].isSearching
-                        ? CircularProgressIndicator()
-                        : FlatButton(
-                            child: Icon(Icons.arrow_forward_ios),
-                            onPressed: () {
-                              setState(() {
-                                stations[index].isSearching = true;
-                              });
+                    // trailing: (stations[index].isSearching
+                    //     ? CircularProgressIndicator()
+                    //     : FlatButton(
+                    //         child: Icon(Icons.arrow_forward_ios),
+                    //         onPressed: () {
+                    //           setState(() {
+                    //             stations[index].isSearching = true;
+                    //           });
 
-                              bloc
-                                  .getDirections(stations[index].latitude,
-                                      stations[index].longitude)
-                                  .then((response) {
-                                var listLng = List<LatLng>();
-                                response.routes[0].legs[0].steps
-                                    .forEach((elm) => listLng.addAll([
-                                          LatLng(elm.startLocation.lat,
-                                              elm.startLocation.lng),
-                                          LatLng(elm.endLocation.lat,
-                                              elm.endLocation.lng)
-                                        ]));
+                    //           bloc
+                    //               .getDirections(stations[index].latitude,
+                    //                   stations[index].longitude)
+                    //               .then((response) {
+                    //             var listLng = List<LatLng>();
+                    //             response.routes[0].legs[0].steps
+                    //                 .forEach((elm) => listLng.addAll([
+                    //                       LatLng(elm.startLocation.lat,
+                    //                           elm.startLocation.lng),
+                    //                       LatLng(elm.endLocation.lat,
+                    //                           elm.endLocation.lng)
+                    //                     ]));
 
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => MapWalking(
-                                            listLng,
-                                            response.routes[0].legs[0].steps)));
-                              });
-                            })),
+                    //             Navigator.push(
+                    //                 context,
+                    //                 MaterialPageRoute(
+                    //                     builder: (context) => MapWalking(
+                    //                         listLng,
+                    //                         response.routes[0].legs[0].steps)));
+                    //           });
+                    //         })),
                     isThreeLine: true,
                     dense: true,
                   ),

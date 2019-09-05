@@ -72,9 +72,13 @@ class Lines extends StatelessWidget {
 
                   var lines = snapshot.data.data;
 
-                  return CustomScrollView(
-                    slivers: buildListItems(context, lines),
+                  return ListView(
+                    children: buildListItems(context, lines),
                   );
+
+                  // return CustomScrollView(
+                  //   slivers: buildListItems(context, lines),
+                  // );
                 })));
   }
 
@@ -90,42 +94,56 @@ class Lines extends StatelessWidget {
       List<Data> items =
           lines.where((item) => item.carrierUrl.contains(elm)).toList();
 
-      widgetList.add(
-        SliverStickyHeaderBuilder(
-          builder: (context, state) => Container(
-            height: 60.0,
-            color: (state.isPinned ? Colors.pink : Colors.lightBlue)
-                .withOpacity(1.0 - state.scrollPercentage),
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              elm,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, i) => ListTile(
-                dense: true,
-                leading: Image(
-                    image: NetworkImage(
-                        "https://www.transporlis.pt/${items[i].carrierImage}")),
-                title: Text(items[i].lineName),
-                trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => MapLineDetail(items[i])));
-
-                  print('${items[i].lineName} was pressed');
-                },
-              ),
-              childCount: items.length,
-            ),
-          ),
+      var listView = ListView.separated(
+        separatorBuilder: (context, index) => Divider(color: Colors.black,),
+        scrollDirection: Axis.vertical,
+        itemCount: items.length,
+        itemBuilder: (context, index) => ListTile(
+          // leading: Image(
+          //     image: NetworkImage(
+          //         "https://www.transporlis.pt/${items[index].carrierImage}")),
+          title: Text(items[index].lineName),
+          subtitle: Text('Empresa: $elm'),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MapLineDetail(items[index])));
+          },
         ),
       );
+
+      var widgets = items.map((item) => Row(
+            children: <Widget>[
+              Text(item.lineName),
+              SizedBox(
+                height: 15.0,
+              )
+            ],
+          ));
+
+      widgetList.add(ExpansionTile(
+        key: Key(elm),
+        title: Text(elm),
+        leading: Image(
+          image: NetworkImage(
+              "https://www.transporlis.pt/${items[0].carrierImage}"),
+        ),
+        children: <Widget>[
+          Container(
+              height: 520.0,
+              width: 500.0,
+              child: Flex(
+                direction: Axis.vertical,
+                children: <Widget>[
+                  Expanded(
+                    child: listView,
+                  )
+                ],
+              ))
+        ],
+      ));
     });
 
     return widgetList;

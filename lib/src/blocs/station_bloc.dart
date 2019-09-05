@@ -17,8 +17,8 @@ class StationsBloc extends BlocBase {
 
   final BehaviorSubject<PositionLocationModel> _currentLocationController =
       BehaviorSubject.seeded(PositionLocationModel(null, "", false));
-  final BehaviorSubject<LineModel> _stationsController =
-      BehaviorSubject.seeded(LineModel(null, null));
+  final BehaviorSubject<List<LineModel>> _stationsController =
+      BehaviorSubject.seeded(List<LineModel>());
   final _positionController =
       BehaviorSubject<LatLng>.seeded(new LatLng(0.0, 0.0));
 
@@ -26,10 +26,10 @@ class StationsBloc extends BlocBase {
   Observable<PositionLocationModel> get curretPosition =>
       _currentLocationController.stream.asyncMap((v) => getCurrentPosition());
 
-  Sink<LineModel> get setStation => _stationsController.sink;
-  Observable<LineModel> get listStation => _stationsController.stream;
+  Sink<List<LineModel>> get setStation => _stationsController.sink;
+  Observable<List<LineModel>> get listStation => _stationsController.stream;
   
-  Observable<LineModel> get getStations => _stationsController.stream.asyncMap(
+  Observable<List<LineModel>> get getStations => _stationsController.stream.asyncMap(
       (station) => stationRepository.getStations(
           _positionController.value.latitude.toString(),
           _positionController.value.longitude.toString(),
