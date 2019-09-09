@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: TabBar(
+        isScrollable: false,
         //colors:[Color(0xFF673ab7),Color(0xFF3f51b5)]
         unselectedLabelColor: Colors.orangeAccent[400],
         labelColor: Color(0xFF140085),
@@ -46,6 +47,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         ],
       ),
       body: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
         controller: tabController,
         children: <Widget>[
           routes.Routes(),

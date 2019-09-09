@@ -47,6 +47,7 @@ class MapWalkingState extends State<MapWalking> {
         }));
 
     var googleMap = GoogleMap(
+      zoomGesturesEnabled: true,
       polylines: _polyline,
       markers: _markers,
       mapType: MapType.hybrid,
