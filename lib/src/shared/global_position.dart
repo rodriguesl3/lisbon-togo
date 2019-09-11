@@ -13,6 +13,11 @@ class GlobalPosition {
 
     var location = Location();
     try {
+      bool requestService = await Location().requestService();
+      bool hasPermission = await Location().hasPermission();
+      bool hasFoo = await Location().serviceEnabled();
+      bool foo = await Location().requestPermission();
+
       currentLocation = await location.getLocation();
       positionLocation = PositionLocationModel(currentLocation, "", true);
     } on PlatformException catch (e) {
@@ -35,7 +40,8 @@ class GlobalPosition {
       if (!requestService) {
         var _lastPosition = await getLastPositionKnown();
 
-        return PositionLocationModel(null, null, false, lastPosition: _lastPosition);
+        return PositionLocationModel(null, null, false,
+            lastPosition: _lastPosition);
       }
 
       if (GlobalPosition.currentPosition != null) {
@@ -63,7 +69,6 @@ class GlobalPosition {
   Future<LatLng> getLastPositionKnown() async {
     final prefs = await SharedPreferences.getInstance();
     final lastPosition = prefs.getStringList('lastPosition');
-    return LatLng(
-                double.parse(lastPosition[0]), double.parse(lastPosition[1]));
+    return LatLng(double.parse(lastPosition[0]), double.parse(lastPosition[1]));
   }
 }
