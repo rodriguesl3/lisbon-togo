@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lisbon_togo/src/shared/components/google_map_walking.dart';
 import 'package:lisbon_togo/src/shared/components/loading.dart';
-import 'package:lisbon_togo/src/shared/global_position.dart';
-import 'package:lisbon_togo/src/shared/model/position_location.dart';
 import 'package:lisbon_togo/src/shared/model/stations.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../blocs/station_bloc.dart';
 
@@ -18,24 +17,30 @@ class Stations extends StatefulWidget {
 class _StationsState extends State<Stations> {
   String searchQuery = "Search query";
   Set<Marker> _markers = {};
+  StationsBloc bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    bloc = BlocProvider.getBloc<StationsBloc>();
+    bloc.getCurrentPosition();
+  }
 
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.getBloc<StationsBloc>();
-    bloc.getCurrentPosition();
-
     return StreamBuilder<LatLng>(
         stream: bloc.streamCurrentPosition,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || snapshot.data == StationsBloc.initialData) {
             return new Loading('Procurando sua localização.');
           } else if (snapshot.hasError) {
             return new Loading('Problema para encontrar localização');
           }
 
           var position = snapshot.data;
+          _markers = {};
           _markers.add(Marker(
-              markerId: MarkerId('sdfçajsdjfasdf'),
+              markerId: MarkerId(Uuid().v4()),
               position: position,
               infoWindow: InfoWindow(title: 'Você está aqui'),
               visible: true));
@@ -51,15 +56,22 @@ class _StationsState extends State<Stations> {
                   expandedHeight: MediaQuery.of(context).size.height / 1.5,
                   flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,
-                    title: Text(
-                      "Paragens Próximas",
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold),
+                    title: Container(
+                      alignment: Alignment.bottomCenter,
+                      width: 400.0,
+                      height: 300.0,
+                      child: Text(
+                        "Paragens Próximas",
+                        style: TextStyle(
+                            backgroundColor: Colors.white.withOpacity(0.8),
+                            color: Colors.black,
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                     background: Container(
-                        color: Colors.lightBlue, child: buildMap(position)),
+                        color: Colors.lightBlue,
+                        child: buildMap(position)),
                   ),
                 ),
                 SliverFillRemaining(hasScrollBody: true, child: buildList(bloc))
@@ -73,7 +85,16 @@ class _StationsState extends State<Stations> {
       markers: _markers,
       mapType: MapType.hybrid,
       initialCameraPosition: CameraPosition(target: position, zoom: 17.0),
-      onMapCreated: (GoogleMapController controller) {},
+      onMapCreated: (GoogleMapController controller) {
+        if (position != StationsBloc.initialData) {
+          CameraPosition startRoute = CameraPosition(
+              bearing: 192.8334901395799,
+              target: position,
+              // tilt: 59.440717697143555,
+              zoom: 16.151926040649414);
+          controller.animateCamera(CameraUpdate.newCameraPosition(startRoute));
+        }
+      },
     );
   }
 

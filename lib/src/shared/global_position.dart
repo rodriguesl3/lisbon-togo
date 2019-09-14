@@ -18,8 +18,22 @@ class GlobalPosition {
       bool hasFoo = await Location().serviceEnabled();
       bool foo = await Location().requestPermission();
 
-      currentLocation = await location.getLocation();
-      positionLocation = PositionLocationModel(currentLocation, "", true);
+      var futureLocation = location.getLocation().then((response) {
+        currentLocation = response;
+        positionLocation = PositionLocationModel(currentLocation, "", true);
+      })
+      .timeout(Duration(seconds: 3))
+      .whenComplete(() async{
+        if (currentLocation == null) {
+          var lastPosition = await getLastPositionKnown();
+
+          positionLocation = PositionLocationModel(null, null, false,
+              lastPosition: lastPosition);
+        }
+      });
+
+      await futureLocation;
+
     } on PlatformException catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
         positionLocation = PositionLocationModel(null, e.code, false);
