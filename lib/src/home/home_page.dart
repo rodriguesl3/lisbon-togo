@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lisbon_togo/src/pages/welcome.dart';
 //import 'package:flutter/widgets.dart';
 
 import './home_tabs/suggestions.dart' as suggestions;
@@ -50,7 +51,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         physics: NeverScrollableScrollPhysics(),
         controller: tabController,
         children: <Widget>[
-          routes.Routes(),
+          WelcomePage(),
           stations.Stations(),
           lines.Lines(),
           suggestions.SugestionPage()

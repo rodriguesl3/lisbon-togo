@@ -32,7 +32,8 @@ dependencies:
   flutter_staggered_grid_view:
   flutter_sticky_header: "^0.4.0"
   shared_preferences: 
-
+  flutter_google_places: ^0.2.3
+  
 
 
 dev_dependencies:
