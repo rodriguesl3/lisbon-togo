@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lisbon_togo/src/home/home_page.dart';
 import 'package:lisbon_togo/src/home/home_tabs/routes.dart';
-import 'package:lisbon_togo/src/home/home_tabs/stations.dart';
 
 class CustomFlatButton extends StatelessWidget {
   final Widget widget;

@@ -1,4 +1,6 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:lisbon_togo/src/blocs/directions_map_bloc.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
@@ -72,6 +74,21 @@ class MapSampleState extends State<MapSample> {
                       var polylineSnapshot = snapshot.data;
 
                       return GoogleMap(
+                        gestureRecognizers: Set()
+                          ..add(Factory<PanGestureRecognizer>(
+                              () => PanGestureRecognizer()))
+                          ..add(
+                            Factory<VerticalDragGestureRecognizer>(
+                                () => VerticalDragGestureRecognizer()),
+                          )
+                          ..add(
+                            Factory<HorizontalDragGestureRecognizer>(
+                                () => HorizontalDragGestureRecognizer()),
+                          )
+                          ..add(
+                            Factory<ScaleGestureRecognizer>(
+                                () => ScaleGestureRecognizer()),
+                          ),
                         polylines: polylineSnapshot,
                         markers: makerSnapshot,
                         mapType: MapType.hybrid,

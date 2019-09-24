@@ -1,12 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'package:lisbon_togo/src/shared/components/google_map_line.dart';
 import 'package:lisbon_togo/src/shared/model/carrier_line.dart';
-
 import '../../blocs/lines_bloc.dart';
 
 class Lines extends StatelessWidget {
