@@ -9,6 +9,7 @@ import 'package:lisbon_togo/src/blocs/station_bloc.dart';
 import 'package:lisbon_togo/src/blocs/suggestion_bloc.dart';
 import 'package:lisbon_togo/src/repositories/direction_repository.dart';
 import 'package:lisbon_togo/src/repositories/lines_repository.dart';
+import 'package:lisbon_togo/src/repositories/next_bus_repository.dart';
 import 'package:lisbon_togo/src/repositories/request_client_http.dart';
 import 'package:lisbon_togo/src/repositories/route_repository.dart';
 import 'package:lisbon_togo/src/repositories/stations_repository.dart';
@@ -37,7 +38,8 @@ void main() async {
           (i) => DirectionRepository(i.get<RequestDirection>().requestHttp())),
       Dependency((i) => LinesRepository(i.get<RequestClient>().requestHttp())),
       Dependency(
-          (i) => LineDetailRepository(i.get<RequestClient>().requestHttp()))
+          (i) => LineDetailRepository(i.get<RequestClient>().requestHttp())),
+      Dependency((i) => NextBusRepository(i.get<RequestClient>().requestHttp()))
     ],
     blocs: [
       Bloc((i) => SuggestionBLoc(i.get<SuggestionsRepository>())),
@@ -47,7 +49,7 @@ void main() async {
       Bloc((i) => DirectionsMapBloc()),
       Bloc((i) => LinesBloc(i.get<LinesRepository>())),
       Bloc((i) => LinesDetailBloc(i.get<LineDetailRepository>())),
-      Bloc((i) => WelcomeBloc())
+      Bloc((i) => WelcomeBloc(i.get<NextBusRepository>()))
     ],
   ));
 }

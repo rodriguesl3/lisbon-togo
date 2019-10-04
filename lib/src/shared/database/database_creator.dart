@@ -16,6 +16,7 @@ class DatabaseCreator {
   static const String latitude = 'latitude';
   static const String longitude = 'longitude';
   static const String position = 'position';
+  static const String createdAt = 'createdAt';
 
 
   static void databaseLog(String functionName, String sql,
@@ -40,7 +41,8 @@ class DatabaseCreator {
       $phoneNumber TEXT,
       $name TEXT,
       $latitude TEXT,
-      $longitude TEXT
+      $longitude TEXT,
+      $createdAt DATETIME
     )
     ''';
 

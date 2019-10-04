@@ -76,9 +76,9 @@ class _WelcomePageState extends State<WelcomePage> {
 
     _widgetContent = _buildContentList();
 
-    PredictionRepository.getAllPredictions()
-        .then((result) => predictionList = result)
-        .catchError((onError) => print(onError));
+    // PredictionRepository.getAllPredictions()
+    //     .then((result) => predictionList = result)
+    //     .catchError((onError) => print(onError));
 
     super.initState();
   }
@@ -141,11 +141,20 @@ class _WelcomePageState extends State<WelcomePage> {
                 SizedBox(
                   width: 20.0,
                 ),
-                Text(
-                  '${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                      color: Colors.green, fontWeight: FontWeight.w900),
-                ),
+                Column(
+                  children: <Widget>[
+                    Text(
+                      'Partida: ${item.nextBus.leaveAt}',
+                      style: TextStyle(
+                          color: Colors.green, fontWeight: FontWeight.w900),
+                    ),
+                    Text(
+                      'Chegada: ${item.nextBus.arriveAt}',
+                      style: TextStyle(
+                          color: Colors.green, fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
@@ -167,6 +176,7 @@ class _WelcomePageState extends State<WelcomePage> {
           return Loading('Buscando últimas consultas');
         }
         var predictionList = snapshot.data;
+
         return ListView(children: _buildLastSearch(predictionList));
       },
     );
@@ -205,7 +215,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     ],
                   ));
                 }
-                
+
                 return MapSample(curPosition, destination,
                     routeList: snapshot.data.toList());
               });
@@ -253,7 +263,7 @@ class _WelcomePageState extends State<WelcomePage> {
               child: Icon(Icons.close),
               onPressed: () {
                 setState(() {
-                 _widgetContent =  _buildContentList();
+                  _widgetContent = _buildContentList();
                 });
               },
             ),

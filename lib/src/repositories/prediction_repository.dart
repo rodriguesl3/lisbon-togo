@@ -1,10 +1,9 @@
 import 'package:lisbon_togo/src/shared/database/database_creator.dart';
 import 'package:lisbon_togo/src/shared/model/prediction_model.dart';
-import 'package:sqflite/sqflite.dart';
 
 class PredictionRepository {
   static Future<List<PredictionModel>> getAllPredictions() async {
-    final sql = '''SELECT * FROM ${DatabaseCreator.predictionTable}''';
+    final sql = '''SELECT * FROM ${DatabaseCreator.predictionTable} ORDER BY ${DatabaseCreator.createdAt} DESC''';
     final data = await db.rawQuery(sql);
 
     return (data as List)
@@ -14,9 +13,8 @@ class PredictionRepository {
 
   static Future<PredictionModel> getPredictionById(int id) async {
     final sql =
-        '''SELECT * FROM ${DatabaseCreator.predictionTable} WHERE ${DatabaseCreator.id} == $id''';
+        '''SELECT TOP 5 * FROM ${DatabaseCreator.predictionTable} WHERE ${DatabaseCreator.id} == $id''';
     final data = await db.rawQuery(sql);
-
     final prediction = PredictionModel.fromJson(data[0]);
 
     return prediction;
@@ -31,7 +29,8 @@ class PredictionRepository {
      ${DatabaseCreator.phoneNumber},
      ${DatabaseCreator.name},
      ${DatabaseCreator.latitude},
-     ${DatabaseCreator.longitude}
+     ${DatabaseCreator.longitude},
+     ${DatabaseCreator.createdAt}
      )
      VALUES
      (
@@ -42,7 +41,8 @@ class PredictionRepository {
        '${prediction.phoneNumber}',
        '${prediction.name}',
        '${prediction.latitude}',
-       '${prediction.longitude}'
+       '${prediction.longitude}',
+       '${DateTime.now()}'
      )''';
 
     final result = await db.rawInsert(sql);
@@ -52,10 +52,10 @@ class PredictionRepository {
   }
 
   static Future<int> removePrediction(PredictionModel prediction) async {
-    final sql = '''DELETE FROM ${DatabaseCreator.predictionTable} WHERE ${DatabaseCreator.id} = ${prediction.id}''';
+    final sql =
+        '''DELETE FROM ${DatabaseCreator.predictionTable} WHERE ${DatabaseCreator.id} = ${prediction.id}''';
 
     var result = await db.rawDelete(sql);
     return result;
   }
-
 }
