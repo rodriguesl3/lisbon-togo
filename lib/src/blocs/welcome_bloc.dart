@@ -51,6 +51,7 @@ class WelcomeBloc extends BlocBase {
 
       return predictions;
     }
+    return null;
   }
 
   @override

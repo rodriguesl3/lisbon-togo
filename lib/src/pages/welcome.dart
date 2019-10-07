@@ -75,17 +75,13 @@ class _WelcomePageState extends State<WelcomePage> {
     bloc.getCurrentPosition();
 
     _widgetContent = _buildContentList();
-
-    // PredictionRepository.getAllPredictions()
-    //     .then((result) => predictionList = result)
-    //     .catchError((onError) => print(onError));
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Colors.amber[50],
         key: homeScaffoldKey,
         body:
             CustomScrollView(scrollDirection: Axis.vertical, slivers: <Widget>[

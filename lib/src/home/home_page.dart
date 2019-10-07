@@ -13,15 +13,14 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   TabController tabController;
-  int position=0;
- 
- 
-  
+  int position = 0;
+
   @override
   void initState() {
-    tabController = TabController(vsync: this, length:4);
+    tabController = TabController(vsync: this, length: 4);
     super.initState();
   }
 
@@ -34,20 +33,23 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       bottomNavigationBar: TabBar(
         isScrollable: false,
-        //colors:[Color(0xFF673ab7),Color(0xFF3f51b5)]
-        unselectedLabelColor: Colors.orangeAccent[400],
-        labelColor: Color(0xFF140085),
+        
+        //colors:[Color(0xFF673ab7),Color(0xFF3f51b5)],
+        unselectedLabelColor: Colors.indigo[200],
+        labelColor: Theme.of(context).textSelectionColor,
+        indicatorColor: Theme.of(context).errorColor,
         controller: tabController,
         tabs: <Widget>[
           Tab(icon: Icon(Icons.star)),
           Tab(icon: Icon(Icons.location_on)),
           Tab(icon: Icon(Icons.train)),
-          Tab(icon: Icon(Icons.score)),
+          Tab(icon: Icon(Icons.local_airport)),
         ],
       ),
-      body: TabBarView(
+      body: TabBarView(        
         physics: NeverScrollableScrollPhysics(),
         controller: tabController,
         children: <Widget>[

@@ -50,7 +50,7 @@ class _StationsState extends State<Stations> {
                   scrollDirection: Axis.vertical,
                   slivers: <Widget>[
                 SliverAppBar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppBarTheme.of(context).color,
                   floating: false,
                   pinned: true,
                   expandedHeight: MediaQuery.of(context).size.height / 1.5,
@@ -63,8 +63,6 @@ class _StationsState extends State<Stations> {
                       child: Text(
                         "Paragens Próximas",
                         style: TextStyle(
-                            backgroundColor: Colors.white.withOpacity(0.8),
-                            color: Colors.black,
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold),
                       ),

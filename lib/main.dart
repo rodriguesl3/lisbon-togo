@@ -58,15 +58,28 @@ class LisbonApp extends StatelessWidget {
   const LisbonApp({Key key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     GlobalPosition().getCurrentPosition();
 
     return MaterialApp(
       title: "Lisbon Transport",
       theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Color(0xFF673ab7),
-          buttonColor: Color(0xFFff8400),
+          scaffoldBackgroundColor: Colors.amber[50],
+          appBarTheme: AppBarTheme(
+            color: Colors.indigo[900],
+            elevation: 12.0,
+          ),
+          pageTransitionsTheme: PageTransitionsTheme(),
+          
+          primaryColor: Colors.indigo,
+          accentColor: Colors.red[700],
+          buttonColor: Color(0xab000d),
+          textSelectionColor: Colors.indigo[600],
+          
+          errorColor: Colors.redAccent[700],
+          backgroundColor: Colors.white60,
+          // cardColor: Color(0xebebd3),
+
           fontFamily: 'Montserrat'),
       debugShowCheckedModeBanner: false,
       home: HomePage(),

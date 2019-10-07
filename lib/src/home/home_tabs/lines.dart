@@ -23,7 +23,12 @@ class Lines extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 0.0),
         child: Center(
           child: TextField(
+            textAlign: TextAlign.center,
             autocorrect: true,
+            decoration: InputDecoration(
+              hintText: 'Buscar carreira',
+              hintStyle: TextStyle(color: Colors.white)
+            ),
             onChanged: (data) {
               bloc.sinkSearchQuery.add(data);
               getLines(context).then((res) {
@@ -31,24 +36,11 @@ class Lines extends StatelessWidget {
               });
             },
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.white,              
             ),
           ),
         ),
-        decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                  'https://www.incimages.com/uploaded_files/image/970x450/getty_874661962_200013331653767149166_347892.jpg'),
-              fit: BoxFit.cover,
-              colorFilter: new ColorFilter.mode(
-                  Colors.black.withOpacity(0.2), BlendMode.dstATop),
-            ),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(55.0)),
-            boxShadow: [new BoxShadow(blurRadius: 15.0)],
-            gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [Color(0xFFff8400), Color(0xFF140085)])),
+      
       ),
     );
 
